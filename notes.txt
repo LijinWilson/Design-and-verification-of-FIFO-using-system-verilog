@@ -1,0 +1,4 @@
+FIFO
+    types:
+        1) Synchronous FIFO
+        2) Asynchronous FIFO
