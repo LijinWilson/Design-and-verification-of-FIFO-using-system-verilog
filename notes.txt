@@ -1,4 +1,115 @@
-FIFO
+>> FIFO
     types:
-        1) Synchronous FIFO
-        2) Asynchronous FIFO
+        1) Synchronous FIFO(same clock is used for read and write operation)
+        2) Asynchronous FIFO (different clock is used for read and write operation).
+
+>> Asynchronous FIFO(First in First Out)
+    - It is an memory buffer that is used to store and retrieve data sequentially. write and read operation in same clock.
+    - It is used in Digital systemt to buffer the data between two subsystem that are both operating under same clock but may have different data processing speed.
+    - BOth read and write operation are happening in same time.
+    - Data are written into FIFO in sequrnce and read out in same order how it is written.
+
+>> This FIFO contain 5 input signal and 3 output signal ===
+    1) Input Signal:
+        - CS: The control signal must be high inorder to to read and write operation in FIFO
+        - wr_en: This flag must be high inorder to do the write operation.
+        - rd_en: This flag must be high inorder to do the read operation.
+        - data_in: The incoming data.
+        - Clock: Clock Signal.
+
+    2) Output Signal:
+        - Data_out: Outputing data.
+        - Full: Flagging that the FIFO is full.
+        - Empty: Flagging that the FIFO is empty.
+
+>> FIFO Operations
+    - WRITE Operations: Data is written into location pointed by the write pointer, and write point is increemented.
+    - READ Operations: Data is read from the location pointed by the read pointer, and read point is increemented
+
+    - If the read pointer catch up with the read pointer (or vice versa). FIFO either become empty and full depending on the direction.
+
+>> FIFO Components:
+    - WRITE Pointer: keep track of the location where the next data will be written.
+    - READ Pointer: keep track of the location where the next data will be read from.
+
+>> FIFO Example operation
+===========================================================================================================
+                                     EMPTY CONDITION in FIFO
+===========================================================================================================
+
+   [ STATE 1 ]                 [ STATE 2 ]                 [ STATE 3 ]                             [ STATE 4 ]
+ No Value Written            3 Values Written            3 Values Written                        3 Values Written
+     into FIFO                   No Read                 2 Values have Read                      3 Values have Read
+   
+ write_       read_                       read_                                                   
+ pointer      pointer                     pointer                                                 
+   |            |                           |                                                     
+   v            v                           v                                                     
+ +----------------+          +----------------+          +----------------+                       +----------------+
+ |                |          |       12       |          |                |                       |                |
+ +----------------+          +----------------+          +----------------+                       +----------------+
+ |                |          |       35       |          |                |                       |                |
+ +----------------+          +----------------+          +----------------+                       +----------------+
+ |                |          |       40       |          |       40       | <--- read_            |                |
+ +----------------+          +----------------+          +----------------+      pointer          +----------------+
+ |                |          +----------------+          +----------------+                       +----------------+ 
+ +----------------+   write_ |                |   write_ |                |               write_  |                | read_
+ |                |  pointer |                |  pointer |                |               pointer |                | pointers
+ +----------------+     |    +----------------+     |    +----------------+                 |     +----------------+    |
+ |                |     '--> |                |     '--> |                |                 '-->  |                | <--'
+ +----------------+          +----------------+          +----------------+                       +----------------+
+ |                |          |                |          |                |                       |                |
+ +----------------+          +----------------+          +----------------+                       +----------------+
+ |                |          |                |          |                |                       |                |
+ +----------------+          +----------------+          +----------------+                       +----------------+
+
+    Full  = 0                   Full  = 0                   Full  = 0                                   Full  = 0
+    Empty = 1                   Empty = 0                   Empty = 0                                   Empty = 1
+
+======================================================================================================================
+
+
+empty = (read_pointer === write_pointer).
+
+
+=============================================================================================================
+                                       FULL CONDITION IN FIFO
+=============================================================================================================
+
+   [ STATE 1 ]                  [ STATE 2 ]                  [ STATE 3 ]                  [ STATE 4 ]
+ No Value written             3 Values written             8 Values written             8 Values written
+    in to FIFO                    No Read                  0 value has Read             0 value has Read
+   
+ write_        read_                        read_        write_       read_                        read_
+ pointer       pointer                      pointer      pointer      pointer                      pointer
+   |             |                            |            |            |                            |
+   v             v                            v            v            v                            v
+ +-----------------+          +-----------------+          +-----------------+          +-----------------+
+ |                 |          |       12        |          |       C1        |    0000  |       C1        | <--- 0000
+ +-----------------+          +-----------------+          +-----------------+          +-----------------+
+ |                 |          |       35        |          |       35        |    0001  |       35        |
+ +-----------------+          +-----------------+          +-----------------+          +-----------------+
+ |                 |          |       40        |          |       40        |    0010  |       40        |
+ +-----------------+          +-----------------+          +-----------------+          +-----------------+
+ |                 |          |                 | <--- write_ |       50        |    0011  |       50        |
+ +-----------------+          +-----------------+      pointer +-----------------+          +-----------------+
+ |                 |          |                 |          |       13        |    0100  |       13        |
+ +-----------------+          +-----------------+          +-----------------+          +-----------------+
+ |                 |          |                 |          |       A5        |    0101  |       A5        |
+ +-----------------+          +-----------------+          +-----------------+          +-----------------+
+ |                 |          |                 |          |       6B        |    0110  |       6B        |
+ +-----------------+          +-----------------+          +-----------------+          +-----------------+
+ |                 |          |                 |          |       13        |    0111  |       13        |
+ +-----------------+          +-----------------+          +-----------------+          +-----------------+
+                                                                                 write_
+                                                                                 pointer
+                                                                                   |
+                                                                                   v
+                                                                                  1000  <-------'
+
+    Full  = 0                    Full  = 0                    Full  = 1
+    Empty = 1                    Empty = 0                    Empty = 0
+
+-------------------------------------------------------------------------------------------------------------
+                       full = (read_pointer == {~write_pointer[3], write_pointer[2:0]});
+=============================================================================================================
