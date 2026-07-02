@@ -41,7 +41,7 @@ task write_data(input [DATA_WIDTH-1:0] d_in);
     @(posedge clk);
     cs = 1; wr_en = 1;
     data_in = d_in;
-    $display($time, "Read operation >> data input = %0d", $data_in);
+    $display($time, "Read operation >> data input = %0d", data_in);
     @(posedge clk);
     cs = 1; wr_en = 0;
 endtask
@@ -52,7 +52,7 @@ task read_data();
     cs = 1; rd_en = 1;
     @(posedge clk);
     #1;
-    $display($time, "Write Operation >> Data Out = %0d", $data_out);
+  $display($time, "  Write Operation >> Data Out = %0d", data_out);
     cs = 1; rd_en = 0;
 endtask
 
@@ -60,7 +60,7 @@ endtask
 initial begin
     #1; // resetting the system
     rst_n = 0; rd_en = 0; wr_en = 0;
-    $display($time,"Scenario - 1");
+  $display($time,"\n Scenario - 1");
     @(posedge clk);
     rst_n = 1; // disabling the reset
     // Writing the data
@@ -73,13 +73,13 @@ initial begin
     read_data();
     read_data();
 
-    $display($time, "Scenario - 2");
-    for (integer i = 0; i<FIFO_DEPTH ; i=i+1; ) begin
-        write_data(2**1);
+  $display($time, "\n Scenario - 2");
+    for (integer i = 0; i<FIFO_DEPTH ; i=i+1 ) begin
+      	write_data(2**i);
         read_data();
     end
 
-    $display($time, "Scenario - 3");
+  $display($time, " \n Scenario - 3");
     for (integer i = 0; i<FIFO_DEPTH; i=i+1) begin
         write_data(2**i);
     end
@@ -87,6 +87,14 @@ initial begin
     for (integer i = 0; i<FIFO_DEPTH; i=i+1) begin
         read_data();
     end
+  #40; $finish();
+  
+
 end
+    initial
+    begin
+      $dumpfile("dump.vcd");
+      $dumpvars;
+    end
 
 endmodule
