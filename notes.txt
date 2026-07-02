@@ -5,26 +5,26 @@
 
 >> Asynchronous FIFO(First in First Out)
     - It is an memory buffer that is used to store and retrieve data sequentially. write and read operation in same clock.
-    - It is used in Digital systemt to buffer the data between two subsystem that are both operating under same clock but may have different data processing speed.
+    - It is used in Digital system to buffer the data between two subsystem that are both operating under same clock but may have different data processing speed.
     - BOth read and write operation are happening in same time.
-    - Data are written into FIFO in sequrnce and read out in same order how it is written.
+    - Data are written into FIFO in sequence and read out in same order how it is written.
 
 >> This FIFO contain 5 input signal and 3 output signal ===
     1) Input Signal:
-        - CS: The control signal must be high inorder to to read and write operation in FIFO
-        - wr_en: This flag must be high inorder to do the write operation.
-        - rd_en: This flag must be high inorder to do the read operation.
+        - CS: The control signal must be high in order to to read and write operation in FIFO
+        - wr_en: This flag must be high in order to do the write operation.
+        - rd_en: This flag must be high in order to do the read operation.
         - data_in: The incoming data.
         - Clock: Clock Signal.
 
     2) Output Signal:
-        - Data_out: Outputing data.
+        - Data_out: Outputting data.
         - Full: Flagging that the FIFO is full.
         - Empty: Flagging that the FIFO is empty.
 
 >> FIFO Operations
-    - WRITE Operations: Data is written into location pointed by the write pointer, and write point is increemented.
-    - READ Operations: Data is read from the location pointed by the read pointer, and read point is increemented
+    - WRITE Operations: Data is written into location pointed by the write pointer, and write point is incremented.
+    - READ Operations: Data is read from the location pointed by the read pointer, and read point is incremented
 
     - If the read pointer catch up with the read pointer (or vice versa). FIFO either become empty and full depending on the direction.
 
@@ -70,6 +70,16 @@
 
 
 empty = (read_pointer === write_pointer).
+Working:
+    In state - 2:
+        - After ever write operation the write pointer will get incremented.
+        - The read pointer is still in initial position, till now no read operation has happened.
+    In State - 4:
+        - In state 4, both read pointer and write pointer are on same location, so that time also empty flag is HIGH.
+
+    >>--- Whenever the write and read pointer are on same location the empty flag will become HIGH. ---<<
+ 
+    =========>>> empty = (write_pointer == read_pointer); <<<========
 
 
 =============================================================================================================
@@ -80,10 +90,10 @@ empty = (read_pointer === write_pointer).
  No Value written             3 Values written             8 Values written             8 Values written
     in to FIFO                    No Read                  0 value has Read             0 value has Read
    
- write_        read_                        read_        write_       read_                        read_
- pointer       pointer                      pointer      pointer      pointer                      pointer
-   |             |                            |            |            |                            |
-   v             v                            v            v            v                            v
+ write_        read_                        read_        write_       read_                               read_
+ pointer       pointer                      pointer      pointer      pointer                            pointer
+   |             |                            |            |            |                                  |
+   v             v                            v            v            v                                  v
  +-----------------+          +-----------------+          +-----------------+          +-----------------+
  |                 |          |       12        |          |       C1        |    0000  |       C1        | <--- 0000
  +-----------------+          +-----------------+          +-----------------+          +-----------------+
@@ -101,15 +111,34 @@ empty = (read_pointer === write_pointer).
  +-----------------+          +-----------------+          +-----------------+          +-----------------+
  |                 |          |                 |          |       13        |    0111  |       13        |
  +-----------------+          +-----------------+          +-----------------+          +-----------------+
-                                                                                 write_
-                                                                                 pointer
-                                                                                   |
-                                                                                   v
-                                                                                  1000  <-------'
+                                                                write_pointer --> 1000
 
     Full  = 0                    Full  = 0                    Full  = 1
     Empty = 1                    Empty = 0                    Empty = 0
 
+
+Working:
+    - STATE - 1
+        - In this read and write pointer are on same location so empty flag is high(1);
+        - 
+    - STATE - 2
+        - Three data are written inside, so write pointer incremented.
+        - No read operation happened, read pointer is on its initial side.
+    
+    - STATE - 3
+        - In this case when the read and write pointer are on same location. but full flag become high instead of empty.
+        - After the 8 location are written, FIFO write pointer will incremented to 8(write pointer 9th location).
+        - Their is no content to write in 9th location, it will move back to initial location.
+        - While comparison time, value of write_pointer and read_pointer is 1000 and 0000.
+        - The value of MSB is different and 3 LSB are not same.
+        - we can compare the read and write pointer by inverting the MSB bit of write pointer. below is the comparison logic.
+
+
+    - By taking the 3 bit for representing the write and read pointer, it is very difficult to implement the full and empty flag.
+    - So that we are considering in 4 bit, so that the write pointer will increment to the next state 1000. FIFO become full and nothing to write in this location. so we can implement full flag easily.
+    
 -------------------------------------------------------------------------------------------------------------
                        full = (read_pointer == {~write_pointer[3], write_pointer[2:0]});
 =============================================================================================================
+
+
